@@ -57,6 +57,8 @@ from django.forms import extras
 
 # so that you can write ${form.field} in templates
 forms.BoundField.__html__ = forms.BoundField.__unicode__
+util.ErrorList.__html__ = forms.ErrorList.__unicode__
+util.ErrorDict.__html__ = forms.ErrorDict.__unicode__
 
 # Patch widgets.SelectMultiple to work with Paste's MultiDict;
 # see http://code.djangoproject.com/ticket/10659 for discussion.
