@@ -39,24 +39,24 @@ __version__ = 0.1
 # The patches in the section below are required for django forms to work.
 
 
+# Django uses a function called mark_safe for HTML strings;
+# adapt it to use WebHelpers' literal() function instead.
+from django.utils import safestring
+from webhelpers.html import literal
+safestring.mark_safe = literal
+
 # Configure Django settings once, and only once.
 from django.conf import settings
 if not hasattr(settings, '__django_configured'):
     settings.configure()
     settings.__django_configured = True
 
-# Django uses a function called mark_safe for HTML strings;
-# adapt it to use WebHelpers' literal() function instead.
-from django.utils import safestring
-from webhelpers.html import literal
-def webhelpers_literal(func):
-    def wrapped(s):
-        return literal(func(s))
-    return wrapped
-safestring.mark_safe = webhelpers_literal(safestring.mark_safe)
-
 # Wildcard because this module is a drop-in replacement for `django.forms`.
 from django.forms import *
+from django.forms import extras
+
+# so that you can write ${form.field} in templates
+forms.BoundField.__html__ = forms.BoundField.__unicode__
 
 # Patch widgets.SelectMultiple to work with Paste's MultiDict;
 # see http://code.djangoproject.com/ticket/10659 for discussion.
