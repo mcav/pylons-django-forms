@@ -2,6 +2,9 @@
 forms.py: Adapts Django's forms module for use with Pylons.
 
 Copyright (c) 2009 Marcus Cavanaugh.
+Snippets from Django <http://www.djangoproject.com/>
+          and Pylons <http://www.pylonshq.com/>
+          are copyright their respective owners.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
