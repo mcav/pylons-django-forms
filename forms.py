@@ -41,9 +41,20 @@ __version__ = 0.1
 
 # Django uses a function called mark_safe for HTML strings;
 # adapt it to use WebHelpers' literal() function instead.
-from django.utils import safestring
+from django.utils import safestring, html as utils_html
 from webhelpers.html import literal
 safestring.mark_safe = literal
+
+# Make sure conditional escape works with webhelpers literals too
+def _html_conditional_escape(html):
+    """
+    Similar to escape(), except that it doesn't operate on pre-escaped strings.
+    """
+    if hasattr(html, '__html__') or isinstance(html, utils_html.SafeData):
+        return html
+    else:
+        return utils_html.escape(html)
+utils_html.conditional_escape = _html_conditional_escape
 
 # Configure Django settings once, and only once.
 from django.conf import settings
@@ -54,11 +65,13 @@ if not hasattr(settings, '__django_configured'):
 # Wildcard because this module is a drop-in replacement for `django.forms`.
 from django.forms import *
 from django.forms import extras
+from django.forms import formsets
 
 # so that you can write ${form.field} in templates
 forms.BoundField.__html__ = forms.BoundField.__unicode__
 util.ErrorList.__html__ = forms.ErrorList.__unicode__
 util.ErrorDict.__html__ = forms.ErrorDict.__unicode__
+formsets.BaseFormSet.__html__ = formsets.BaseFormSet.__unicode__
 forms.Form.__html__ = forms.Form.__unicode__
 
 # Patch widgets.SelectMultiple to work with Paste's MultiDict;
@@ -113,6 +126,7 @@ FileField.clean = _FileField_clean
 # cgi.FieldStorage evaluates to True.
 import cgi
 cgi.FieldStorage.__nonzero__ = lambda self: True
+
 
 
 def model_to_dict(*items, **kwds):
@@ -246,6 +260,9 @@ class HTMLForm(object):
         return self._errors
     errors = property(_get_errors)
     
+    def __html__(self):
+        return unicode(self)
+        
     def __unicode__(self):
         # unbound forms should return the HTML unmodified. If this was passed
         # through htmlfill instead, all form values would be nuked.
