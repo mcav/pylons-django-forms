@@ -147,6 +147,8 @@ def model_to_dict(*items, **kwds):
     for item in items:
         if hasattr(item, '__dict__'): # this is a class
             item = item.__dict__
+        if not item:
+            continue
         for attr in item:
             if include and (attr not in include):
                 continue
@@ -272,16 +274,26 @@ class HTMLForm(object):
             response_charset = 'utf-8'
             
         if not self.is_bound:
+            defaults = self.initial.copy()
+            # using WebHelpers, boolean values cannot be True; they must be '1'
+            for key, value in defaults.items():
+                if value is True:
+                    defaults[key] = '1'            
             return literal(formencode.htmlfill.render(
                 form=self.html,
-                defaults=self.initial,
+                defaults=defaults,
                 errors=self.errors,
                 encoding=response_charset # use the proper charset
             ))
         else:
+            defaults = self.data.copy()
+            # using WebHelpers, boolean values cannot be True; they must be '1'
+            for key, value in defaults.items():
+                if value is True:
+                    defaults[key] = '1' 
             return literal(formencode.htmlfill.render(
                 form=self.html,
-                defaults=self.data,
+                defaults=defaults,
                 errors=self.errors,
                 encoding=response_charset # use the proper charset
             ))
